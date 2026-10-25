@@ -1,24 +1,31 @@
 # Deep Research — Orchestration via Tools
 
-本项目是 OpenAI Agents SDK Lab 4 作业的独立可运行改造版，基于
-[ed-donner/agents 的 Deep Research](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research)，
-将 Lab 2 的 **Part 3 → 3a: via Tools** 应用到研究流程。
+**English** | [简体中文](README.zh-CN.md)
 
-## 作业要求核对
+A standalone adaptation of the OpenAI Agents SDK Lab 4 assignment, based on
+[Deep Research from ed-donner/agents](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research).
+It applies the orchestration pattern from Lab 2, **Part 3 → 3a: via Tools**, to the research workflow.
 
-截图指定 `agents/2_openai/deep_research/`，并要求 **Orchestration via Tools**。
-因此需要保留 Deep Research 的工作内容，把控制权交给真正的 Manager Agent。
-原项目的 `ResearchManager` 只是普通 Python 类，按代码顺序运行四个 Agent。
-本版本新增 `Agent(name="Research Manager", tools=[...])`，用四个 `.as_tool()`
-包装 Planner、Search、Writer 和 Email；每个工具执行结束后，结果返回 Manager。
+## Assignment and approach
 
-这与 [OpenAI 官方 Agents as tools 模式](https://developers.openai.com/api/docs/guides/agents/orchestration)
-一致。没有使用 handoffs，也没有把旧的四步流水线整体包成一个工具。
-截图没有规定提交文件格式、评分细则或额外实验；本项目不假设这些要求。
+The assignment points to `agents/2_openai/deep_research/` and asks for
+**Orchestration via Tools**. This implementation preserves the research tasks
+while putting a Manager Agent in charge of orchestration.
 
-## 快速运行（Windows PowerShell）
+In the original implementation, `ResearchManager` is an ordinary Python class
+that runs four agents in a predefined sequence. This version introduces
+`Agent(name="Research Manager", tools=[...])`, wrapping the Planner, Search,
+Writer and Email agents with four `.as_tool()` calls. Each specialist returns
+its result to the Manager.
 
-建议 Python 3.12。本工作目录已建立 `.venv` 并安装依赖；换电脑时执行：
+This follows the [Agents as tools pattern](https://developers.openai.com/api/docs/guides/agents/orchestration).
+It does not use handoffs or wrap the entire original pipeline in a single tool.
+The assignment screenshot does not specify a submission format, detailed rubric
+or additional experiments; this project does not assume those requirements.
+
+## Quick start — Windows PowerShell
+
+Python 3.12 is recommended. Run these commands from the project root:
 
 ```powershell
 python -m venv .venv
@@ -26,140 +33,171 @@ python -m venv .venv
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-本版本已适配用户的 **DeepSeek 官方 API**。编辑项目根目录 `.env`，至少填写：
+The default provider is the **official DeepSeek API**. Configure at least these
+values in the project-root `.env` file:
 
 ```dotenv
 MODEL_PROVIDER=deepseek
-DEEPSEEK_API_KEY=你的DeepSeek官方API密钥
+DEEPSEEK_API_KEY=your-deepseek-api-key
 DEFAULT_MODEL_NAME=deepseek-flash
 HOW_MANY_SEARCHES=5
 ENABLE_TRACING=false
 ```
 
-默认模型按 2026-10-25 查阅的 DeepSeek 官方文档设置为 `deepseek-flash`。
-SDK 通过 DeepSeek 的 Responses API 调用模型，保留结构化输出和工具调用；
-Search Agent 用函数工具调用 DeepSeek Search API，使用同一把 `DEEPSEEK_API_KEY`。
-本模式不需要 OpenAI Key，也不向 OpenAI 上传 trace。模型访问权限、搜索权限和余额仍需在线验证。
-真实运行会产生模型和搜索请求，按服务商规则计费。
+The configured default model is `deepseek-flash`, based on the DeepSeek documentation
+reviewed on October 25, 2026. The SDK uses DeepSeek's Responses API for model calls,
+including structured output and tool calling. The Search Agent uses a function tool
+to call the DeepSeek Search API with the same `DEEPSEEK_API_KEY`.
 
-如需切回最初的 OpenAI 版本，设置 `MODEL_PROVIDER=openai`、
-`DEFAULT_MODEL_NAME=gpt-5.4-mini` 和 `OPENAI_API_KEY`，搜索将切回托管 `WebSearchTool`。
-API 地址由所选 provider 明确指定，避免将 DeepSeek Key 发给错误服务商。
+DeepSeek mode does not require an OpenAI key or upload traces to OpenAI.
+Model access, search access and account balance must be checked with the provider.
+Live runs make billable model and search requests under the provider's pricing.
 
-启动界面：
+To use the OpenAI option, set `MODEL_PROVIDER=openai`,
+`DEFAULT_MODEL_NAME=gpt-5.4-mini` and `OPENAI_API_KEY`. Search then uses the hosted
+`WebSearchTool`. API endpoints are explicitly selected by provider.
+
+Start the interface:
 
 ```powershell
 .\.venv\Scripts\python.exe -m deep_research.app
 ```
 
-在浏览器打开终端显示的本地地址，通常是 `http://127.0.0.1:7860`。
-输入研究问题，点击“开始研究”。默认不勾选发送邮件，四个 Agent 仍都会参与，
-Email Agent 会生成 `.eml` 邮件预览。
+Open the local URL printed in the terminal, usually `http://127.0.0.1:7860`.
+Enter a research question and click **Start research**. Email delivery is off by
+default. All four agents still participate, and the Email Agent creates an `.eml` preview.
 
-也可以通过命令行运行：
+You can also run research from the command line:
 
 ```powershell
 .\.venv\Scripts\python.exe -m deep_research "Compare retrieval-augmented generation and fine-tuning for a university FAQ assistant."
 ```
 
-## 邮件配置
+## Email configuration
 
-核对的最新完整项目使用 SMTP（`messenger.py`）；本版本延续该方式，支持 SSL/TLS 与 STARTTLS。
-默认仅生成本地预览，**预览不代表邮件已经发送**。
-真实发送时还需在 `.env` 配置：
+The reviewed upstream project uses SMTP (`messenger.py`). This adaptation also
+uses SMTP, supporting implicit SSL/TLS and STARTTLS. By default, it creates a
+local preview only: **a preview does not mean an email was sent**.
+
+For delivery, configure the sender in `.env`:
 
 ```dotenv
 EMAIL_SMTP_SERVER=smtp.qq.com
 EMAIL_SMTP_PORT=465
-EMAIL_ADDRESS=你的QQ邮箱@qq.com
-EMAIL_APP_PASSWORD=QQ邮箱生成的授权码
+EMAIL_ADDRESS=your-qq-address@qq.com
+EMAIL_APP_PASSWORD=your-qq-mail-authorization-code
 ```
 
-在网页独立的 **Email settings** 区域选择 **Send report by email** 并填写
-**Recipient email**；开启发送时地址必填，关闭时只生成预览。
-收件地址与发送开关按每次研究传入，不读取旧的 `.env` `EMAIL_TO`。
-页面文字及报告、摘要、后续问题、邮件正文统一使用英文；研究问题仍可用中文输入。
-命令行通过本次运行参数传入收件地址：
+In the separate **Email settings** section, enable **Send report by email** and
+enter a **Recipient email**. A recipient is required when delivery is enabled.
+When delivery is off, the application creates a report and preview only.
+The recipient and delivery choice belong to each run; the application does not
+read the legacy `.env` variable `EMAIL_TO`.
+
+The interface, report, summary, follow-up questions and email content are in
+English. Research questions may still be entered in Chinese.
+
+For command-line delivery, supply the recipient explicitly:
 
 ```powershell
 .\.venv\Scripts\python.exe -m deep_research "Your research question" --send-email --recipient name@example.com
 ```
 
-端口 465 使用隐式 SSL/TLS，其他端口要求 STARTTLS（通常为 587），均验证证书。
-配置后可运行 `.venv/Scripts/python.exe -m deep_research.check_email` 验证登录，该命令不发送邮件。
-修改 `.env` 后需重启 Gradio。尚未实现 OAuth 邮件登录。
-**QQ 授权码步骤及 Gmail、MUST 学生邮箱说明见 [邮箱配置](docs/EMAIL_SETUP.md)。**
-学校邮箱允许接收邮件不代表它允许密码式 SMTP 发送；学校租户是否开放此功能尚未验证。
-状态 `accepted_by_smtp` 表示服务器已接受邮件，不证明已进入收件箱。
-同一次研究内不会重复发送；发生超时时先检查邮箱，再决定是否重新运行。
-不要提交 `.env`、应用密码或密钥；它们已被 `.gitignore` 排除。
+Port 465 uses implicit SSL/TLS; other ports require STARTTLS, typically on port 587.
+Both paths verify TLS certificates. To check the SMTP connection and login without
+sending an email, run:
 
-## 核心实现
+```powershell
+.\.venv\Scripts\python.exe -m deep_research.check_email
+```
 
-| 文件 | 职责 |
+Restart Gradio after changing `.env`. OAuth email authentication is not implemented.
+See the [email setup guide (Chinese)](docs/EMAIL_SETUP.md) for QQ authorization codes
+and notes on Gmail and MUST student accounts. Receiving email through a school
+account does not establish that password-based SMTP sending is enabled; the
+school tenant's support for this has not been verified.
+
+The status `accepted_by_smtp` means the SMTP server accepted the message, not that
+inbox delivery has been confirmed. The application prevents repeated send attempts
+within a run. After a timeout, check the inbox before deciding to run again.
+Keep `.env`, authorization codes and API keys private; `.env` is excluded by `.gitignore`.
+
+## Implementation
+
+| File | Responsibility |
 | --- | --- |
-| `deep_research/manager_agent.py` | Manager 提示词、四个 `.as_tool()`、结构化结果提取 |
-| `deep_research/research_manager.py` | 单次 `Runner.run_streamed(manager_agent, ...)`、事件展示、保存与完成检查 |
-| `deep_research/planner_agent.py` | 输出 `WebSearchPlan`，默认规划 5 次搜索 |
-| `deep_research/search_agent.py` | 按 provider 选择搜索工具，输出证据摘要与来源链接 |
-| `deep_research/deepseek_search.py` | 调用 DeepSeek Search API，保留 URL、日期与证据文本 |
-| `deep_research/providers.py` | 为 SDK 配置 DeepSeek 或 OpenAI 官方 Responses API |
-| `deep_research/writer_agent.py` | 输出 `ReportData`，保留摘要、完整 Markdown、后续研究问题 |
-| `deep_research/email_agent.py` | Email Agent 调用真实函数工具，生成预览或 SMTP 发送 |
-| `deep_research/app.py` | Gradio 界面，显示 Manager 的工具调用记录 |
-| `tests/` | 无外部网络的 SDK 编排、错误处理、邮件与配置测试 |
+| `deep_research/manager_agent.py` | Manager instructions, four `.as_tool()` definitions and structured result extraction |
+| `deep_research/research_manager.py` | One top-level `Runner.run_streamed(manager_agent, ...)`, progress events, persistence and completion checks |
+| `deep_research/planner_agent.py` | Produces `WebSearchPlan`; plans five searches by default |
+| `deep_research/search_agent.py` | Selects a search tool by provider and returns evidence summaries with source links |
+| `deep_research/deepseek_search.py` | Calls the DeepSeek Search API and preserves URLs, dates and evidence text |
+| `deep_research/providers.py` | Configures the SDK for the official DeepSeek or OpenAI Responses API |
+| `deep_research/writer_agent.py` | Produces `ReportData`: summary, full Markdown report and follow-up questions |
+| `deep_research/email_agent.py` | Email Agent and function tool for previews or SMTP delivery |
+| `deep_research/app.py` | Gradio interface and Manager tool-call log |
+| `tests/` | Offline SDK orchestration, error handling, email and configuration tests |
 
 ```mermaid
 flowchart LR
-    U[研究问题] --> M[Research Manager Agent]
+    U[Research question] --> M[Research Manager Agent]
     M -->|plan_research| P[Planner Agent]
     P -->|WebSearchPlan| M
-    M -->|search_web，可重复调用| S[Search Agent + DeepSeek Search]
-    S -->|摘要与来源| M
+    M -->|search_web: repeat as needed| S[Search Agent + DeepSeek Search]
+    S -->|Evidence and sources| M
     M -->|write_report| W[Writer Agent]
     W -->|ReportData| M
     M -->|email_report| E[Email Agent + send_email_tool]
-    E -->|预览或SMTP回执| M
-    M --> R[展示完整报告与保存文件]
+    E -->|Preview or SMTP receipt| M
+    M --> R[Display full report and saved files]
 ```
 
-Manager 的提示词描述工作依赖，模型负责产生实际工具调用。
-为了让依赖清晰，提示词要求 Manager 每次调用一个工具，收到结果后决定下一步；
-可追加最多两次搜索。DeepSeek 文档说明 `parallel_tool_calls` 参数被忽略，
-因此 SDK 额外设置工具执行并发上限为 1。此限制控制执行并发，并不保证模型一定只输出一个调用。
-顶层 `max_turns` 和每个专业 Agent 的 `max_turns` 限制失控循环，但不保证固定费用。
-额外搜索次数主要由提示词约束；真正的硬停止边界是运行轮数。
-LLM 的实际选择和内容质量仍需要在线验证。
+The Manager's instructions describe task dependencies; the model generates the
+actual tool calls. It is instructed to call one tool at a time and use the result
+to decide the next step, with up to two additional searches. Because DeepSeek's
+documented behavior ignores `parallel_tool_calls`, SDK tool execution concurrency
+is also limited to one. This limits simultaneous execution; it does not guarantee
+that the model emits only one tool call per response.
 
-结果提取器只序列化或保存结果，不会自行调用下一阶段。
-Planner / Writer 格式校验失败时，工具向 Manager 返回重试要求，由 Manager 再次调用
-同一工具；每个阶段最多容许一次格式重试。其他错误与邮件发送不走此重试路径。
-Writer 从当前运行状态读取原问题及全部搜索摘要，Manager 不再重复复制长证据到工具参数。
-`ResearchManager` 类仍存在，但职责变为应用外壳；真正负责编排的是 `manager_agent.py` 中的 Agent。
+Top-level and specialist `max_turns` limits bound execution loops, not cost.
+The extra-search allowance is primarily a prompt constraint; turn limits provide
+the hard stopping boundary. Live model decisions and research quality still need review.
 
-## 运行产物与展示
+Result extractors only serialize or save results; they do not invoke the next stage.
+If Planner or Writer output fails format validation, the tool returns a retry
+request to the Manager, which can call the same tool again. Each stage allows one
+format retry. Other errors and email delivery do not use this retry path.
 
-每次研究保存到单独的 `outputs/<UTC时间_随机ID>/`：
+The Writer reads the original question and all search summaries from the current
+run's state, so the Manager does not need to copy long evidence into tool arguments.
+The `ResearchManager` class remains as the application wrapper; the agent in
+`manager_agent.py` performs orchestration.
 
-- `report.md`：Writer 的原始完整报告，避免被 Manager 的短回复覆盖。
-- `report.json`：完整 `ReportData`，含摘要和后续问题。
-- `email.eml`：带纯文本及 HTML 正文的邮件预览。
-- `email_status.json`：预览或 SMTP 接受状态。
-- `workflow.json`：顶层工具调用顺序、运行状态和不含原始响应的格式诊断。
-- `evidence.json`：原问题、规划及逐次保存的搜索摘要，失败时也可下载。
+## Outputs and inspection
 
-失败时保留已经生成的文件，未完成阶段不会显示成成功。
-结构化校验仅允许去掉完整的外层 JSON 代码围栏，不补字段、不拼接截断报告。
-完成检查验证计划、搜索结果数量、报告和邮件回执存在；它不验证研究事实，
-也不严格证明每个计划查询的语义覆盖，需要结合工具记录与报告检查。
-输出文件可能含研究内容和配置的邮箱地址，分享前请自行检查。
+Each run saves its files under `outputs/<UTC_timestamp_random_ID>/`:
 
-DeepSeek 模式保持 `ENABLE_TRACING=false`，使用本地 `workflow.json` 查看调用顺序。
-只有 OpenAI 模式支持本项目的 `ENABLE_TRACING=true`；启用时配置
-`trace_include_sensitive_data=False`，运行时显示 OpenAI trace 链接。
-`workflow.json` 是本地调用记录，不等同于云端 trace。
+- `report.md`: the Writer's full original report, preserved independently of the Manager's final reply.
+- `report.json`: complete `ReportData`, including the summary and follow-up questions.
+- `email.eml`: email preview with plain-text and HTML bodies.
+- `email_status.json`: preview or SMTP acceptance status.
+- `workflow.json`: top-level tool-call order, run status and format diagnostics without raw model responses.
+- `evidence.json`: original question, plan and incrementally saved search summaries, available even after failure.
 
-## 测试
+Failures preserve any files already generated and do not mark unfinished stages
+as successful. Structured-output validation can remove a complete enclosing JSON
+code fence, but does not invent missing fields or reconstruct truncated reports.
+
+Completion checks verify that a plan, sufficient search results, a report and an
+email receipt exist. They do not verify research facts or prove semantic coverage
+of every planned query. Review the tool log and report together. Output files may
+contain research content and email addresses; review them before sharing.
+
+Keep `ENABLE_TRACING=false` in DeepSeek mode and inspect local `workflow.json`
+records. This project supports `ENABLE_TRACING=true` only in OpenAI mode, with
+`trace_include_sensitive_data=False` and an OpenAI trace link shown during the run.
+A local workflow record is not a cloud trace.
+
+## Tests
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -169,19 +207,23 @@ DeepSeek 模式保持 `ENABLE_TRACING=false`，使用本地 `workflow.json` 查�
 .\.venv\Scripts\python.exe -m compileall -q deep_research tests
 ```
 
-测试用模拟模型代替外部 API，但实际执行 Agents SDK 的 Manager、嵌套 `.as_tool()`、
-结构化输出、流式事件和邮件函数工具。测试中的报告只是固定样本，不是真实研究结果。
-当前验证结果与未验证项目见 [作业说明](docs/ASSIGNMENT_NOTES.md)。
+Tests replace external APIs with simulated models while exercising the actual
+Agents SDK Manager, nested `.as_tool()` calls, structured output, streaming events
+and email function tool. Reports used in tests are fixtures, not research findings.
+See the [assignment notes (Chinese)](docs/ASSIGNMENT_NOTES.md) for validation results
+and remaining verification limits.
 
-## 来源
+## Sources and license
 
-- [基础项目](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research)
-- [Lab 4：Deep Research 教学代码](https://github.com/ed-donner/agents/blob/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/4_lab4.ipynb)
-- [Lab 2：Part 3 → 3a: via Tools](https://github.com/ed-donner/agents/blob/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/2_lab2.ipynb)
-- [OpenAI 官方编排文档](https://developers.openai.com/api/docs/guides/agents/orchestration)
-- [DeepSeek Responses API 与兼容性](https://api-docs.deepseek.com/guides/responses_api/)
+- [Base project](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research)
+- [Lab 4: Deep Research walkthrough](https://github.com/ed-donner/agents/blob/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/4_lab4.ipynb)
+- [Lab 2: Part 3 → 3a: via Tools](https://github.com/ed-donner/agents/blob/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/2_lab2.ipynb)
+- [OpenAI orchestration documentation](https://developers.openai.com/api/docs/guides/agents/orchestration)
+- [DeepSeek Responses API and compatibility](https://api-docs.deepseek.com/guides/responses_api/)
 - [DeepSeek Search API](https://api-docs.deepseek.com/guides/search/)
 
-源码核对基准：`62569708496917d5e2d5ce1652902d7c80f6b896`（2026-10-25 核对）。
-专业 Agent 的职责与数据模型改编自上游；独立包结构、Manager 编排、配置、
-预览模式和测试为本次改造。上游 MIT 许可及 Ed Donner 版权声明保留在 `LICENSE`。
+Upstream reference: `62569708496917d5e2d5ce1652902d7c80f6b896`, reviewed on October 25, 2026.
+Specialist responsibilities and data models are adapted from upstream. The
+standalone package, Manager orchestration, configuration, preview mode and tests
+were added for this adaptation. The upstream MIT license and Ed Donner's copyright
+notice are retained in [LICENSE](LICENSE).
