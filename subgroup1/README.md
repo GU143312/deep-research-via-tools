@@ -18,6 +18,19 @@ search, writing, and email agents as tools. For upstream credits, see [Sources a
 | SUN HAOJUN | 1230017538 | Developed an alternative implementation and helped compare both approaches. Updated the Manager to track searches by plan item, require complete coverage before writing, and require a saved report before preparing email. Preserved the original question on Planner retries, enforced the two-search limit for supplementary queries, and reduced the Writer’s response to a save confirmation and summary. | 30% |
 | **Total** | | | **100%** |
 
+### Responsibilities by file
+
+| Team member | Files | Responsibility |
+| --- | --- | --- |
+| GU LANTIAN | [manager_agent.py](deep_research/manager_agent.py), [research_manager.py](deep_research/research_manager.py), [app.py](deep_research/app.py), [__main__.py](deep_research/__main__.py) | Integrated the four specialist tools with the Manager and connected the run loop and progress updates to the web and CLI entry points. |
+| GU LANTIAN | [planner_agent.py](deep_research/planner_agent.py), [search_agent.py](deep_research/search_agent.py), [writer_agent.py](deep_research/writer_agent.py), [email_agent.py](deep_research/email_agent.py) | Led integration of the specialists for planning searches, collecting evidence, writing reports, and preparing or sending email. |
+| GU LANTIAN | [providers.py](deep_research/providers.py), [config.py](deep_research/config.py), [deepseek_search.py](deep_research/deepseek_search.py), [structured_output.py](deep_research/structured_output.py) | Integrated provider configuration, web search, and validation of structured plans and reports. |
+| LIU CHANG | [test_workflow.py](tests/test_workflow.py), [test_output_recovery.py](tests/test_output_recovery.py), [fake_model.py](tests/fake_model.py), [conftest.py](tests/conftest.py) | Verified the full workflow offline using scripted model responses, including incomplete runs and recovery from malformed output. |
+| LIU CHANG | [test_deepseek.py](tests/test_deepseek.py), [test_regressions.py](tests/test_regressions.py), [test_recipients.py](tests/test_recipients.py), [test_smtp.py](tests/test_smtp.py) | Checked search and model requests, failure handling, recipient selection, email preview, and SMTP behavior. |
+| SUN HAOJUN | [state.py](deep_research/state.py), [manager_agent.py](deep_research/manager_agent.py) | Tracked evidence by plan ID, enforced the two-extra-search limit, preserved the question on planner retries, and checked prerequisites before writing or preparing email. |
+| SUN HAOJUN | [writer_agent.py](deep_research/writer_agent.py), [manager_agent.py](deep_research/manager_agent.py), [research_manager.py](deep_research/research_manager.py) | Paired each query with its evidence for the Writer, returned a save confirmation and summary to the Manager, and checked for missing plan IDs before marking a run complete. |
+| SUN HAOJUN | [test_workflow.py](tests/test_workflow.py), [test_output_recovery.py](tests/test_output_recovery.py) | Added targeted regression coverage for repeated searches, early writing and email requests, exhausted search allowances, and retention of the question on retry. |
+
 ## Assignment and approach
 
 The assignment points to `agents/2_openai/deep_research/` and asks for

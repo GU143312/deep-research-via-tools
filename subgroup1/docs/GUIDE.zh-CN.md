@@ -17,6 +17,19 @@
 | SUN HAOJUN | 1230017538 | 并行开发另一套实现并参与方案比较。改进 Manager 的工具编排，按计划项跟踪搜索，集齐各项结果后才允许写作，报告保存后才允许准备邮件。修复 Planner 重试时丢失原问题的问题，将补充搜索限制为两次，并将 Writer 返回给 Manager 的内容精简为保存状态和摘要。 | 30% |
 | **合计** | | | **100%** |
 
+### 具体文件分工
+
+| 成员 | 相关文件 | 具体职责 |
+| --- | --- | --- |
+| GU LANTIAN | [manager_agent.py](../deep_research/manager_agent.py)、[research_manager.py](../deep_research/research_manager.py)、[app.py](../deep_research/app.py)、[__main__.py](../deep_research/__main__.py) | 将四个专业 Agent 注册为 Manager 的工具，把研究流程和进度输出接入网页和命令行入口。 |
+| GU LANTIAN | [planner_agent.py](../deep_research/planner_agent.py)、[search_agent.py](../deep_research/search_agent.py)、[writer_agent.py](../deep_research/writer_agent.py)、[email_agent.py](../deep_research/email_agent.py) | 主导四个专业 Agent 的集成，串起搜索规划、证据收集、报告生成和邮件预览或发送。 |
+| GU LANTIAN | [providers.py](../deep_research/providers.py)、[config.py](../deep_research/config.py)、[deepseek_search.py](../deep_research/deepseek_search.py)、[structured_output.py](../deep_research/structured_output.py) | 整合模型配置、搜索服务和结构化输出校验，使计划与报告可供后续工具读取。 |
+| LIU CHANG | [test_workflow.py](../tests/test_workflow.py)、[test_output_recovery.py](../tests/test_output_recovery.py)、[fake_model.py](../tests/fake_model.py)、[conftest.py](../tests/conftest.py) | 使用模拟模型离线验证完整研究流程，并检查中途停止、输出格式错误及重试时的行为。 |
+| LIU CHANG | [test_deepseek.py](../tests/test_deepseek.py)、[test_regressions.py](../tests/test_regressions.py)、[test_recipients.py](../tests/test_recipients.py)、[test_smtp.py](../tests/test_smtp.py) | 验证模型和搜索请求、异常处理、收件人选择、邮件预览及 SMTP 发送行为。 |
+| SUN HAOJUN | [state.py](../deep_research/state.py)、[manager_agent.py](../deep_research/manager_agent.py) | 按计划编号记录证据，执行两次补搜上限，重试规划时保留原问题，并在写作和准备邮件前检查所需条件。 |
+| SUN HAOJUN | [writer_agent.py](../deep_research/writer_agent.py)、[manager_agent.py](../deep_research/manager_agent.py)、[research_manager.py](../deep_research/research_manager.py) | 将查询词与摘要配对交给 Writer，向 Manager 返回报告保存状态和短摘要，并在任务结束时逐项核对缺失的计划编号。 |
+| SUN HAOJUN | [test_workflow.py](../tests/test_workflow.py)、[test_output_recovery.py](../tests/test_output_recovery.py) | 补充针对性回归验证，覆盖重复搜索、提前请求写作或邮件、补搜额度耗尽，以及重试时原问题的保留。 |
+
 ## 作业要求核对
 
 截图指定 `agents/2_openai/deep_research/`，并要求 **Orchestration via Tools**。
