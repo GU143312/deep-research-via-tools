@@ -1,6 +1,6 @@
 # Deep Research — Orchestration via Tools
 
-[English](README.md) | **简体中文**
+[English](../README.md) | **简体中文**
 
 本项目是 OpenAI Agents SDK Lab 4 作业的独立可运行改造版，基于
 [ed-donner/agents 的 Deep Research](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research)，
@@ -101,7 +101,7 @@ EMAIL_APP_PASSWORD=QQ邮箱生成的授权码
 端口 465 使用隐式 SSL/TLS，其他端口要求 STARTTLS（通常为 587），均验证证书。
 配置后可运行 `.venv/Scripts/python.exe -m deep_research.check_email` 验证登录，该命令不发送邮件。
 修改 `.env` 后需重启 Gradio。尚未实现 OAuth 邮件登录。
-**QQ 授权码步骤及 Gmail、MUST 学生邮箱说明见 [邮箱配置](docs/EMAIL_SETUP.md)。**
+**QQ 授权码步骤及 Gmail、MUST 学生邮箱说明见 [邮箱配置](EMAIL_SETUP.md)。**
 学校邮箱允许接收邮件不代表它允许密码式 SMTP 发送；学校租户是否开放此功能尚未验证。
 状态 `accepted_by_smtp` 表示服务器已接受邮件，不证明已进入收件箱。
 同一次研究内不会重复发送；发生超时时先检查邮箱，再决定是否重新运行。
@@ -184,7 +184,7 @@ DeepSeek 模式保持 `ENABLE_TRACING=false`，使用本地 `workflow.json` 查�
 
 测试用模拟模型代替外部 API，但实际执行 Agents SDK 的 Manager、嵌套 `.as_tool()`、
 结构化输出、流式事件和邮件函数工具。测试中的报告只是固定样本，不是真实研究结果。
-当前验证结果与未验证项目见 [作业说明](docs/ASSIGNMENT_NOTES.md)。
+当前验证结果与未验证项目见 [作业说明](ASSIGNMENT_NOTES.md)。
 
 ## 来源
 

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langgraph-deep-research"
+version = "0.1.0"
+description = "A tool-orchestrated deep research agent built with LangChain and LangGraph"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "gradio>=5.0,<7.0",
+  "langchain>=1.0,<2.0",
+  "langchain-openai>=1.0,<2.0",
+  "langgraph>=1.0,<2.0",
+  "markdown>=3.7,<4.0",
+  "pydantic>=2.7,<3.0",
+  "python-dotenv>=1.0,<2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<10.0",
+  "pytest-asyncio>=0.24,<2.0",
+  "ruff>=0.9,<1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["deep_research"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
