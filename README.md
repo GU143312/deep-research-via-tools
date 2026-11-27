@@ -13,9 +13,9 @@ Upstream code attribution is documented in [Sources and license](#sources-and-li
 
 | Name | Student ID | Contribution | Share |
 | --- | --- | --- | ---: |
-| gulantian | 1230003640 | Led the development of the project. | 50% |
-| liuchang | 1230003652 | Tested the project and checked its functionality. | 20% |
-| sunhaojun | 1230017538 | Developed a similar product in parallel and contributed to comparing the strengths and weaknesses of both approaches to inform the combined solution. | 30% |
+| GU LANTIAN | 1230003640 | Led the development of the project. | 50% |
+| LIU CHANG | 1230003652 | Tested the project and checked its functionality. | 20% |
+| SUN HAOJUN | 1230017538 | Developed a similar product in parallel and contributed to comparing the strengths and weaknesses of both approaches to inform the combined solution. | 30% |
 | **Total** | | | **100%** |
 
 ## Assignment and approach
