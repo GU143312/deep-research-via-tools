@@ -13,6 +13,13 @@ Each subgroup has a separate contribution table. Its percentages describe shares
 
 If a single assignment-wide breakdown is required, weight **Subgroup 1 and Subgroup 2 at 50% each**. Each member's assignment-wide share is their subgroup percentage multiplied by 0.5.
 
+## Subgroup 1 — OpenAI Agents SDK
+
+A manager agent calls specialist agents for planning, web search, report writing, and email. It tracks search coverage against the research plan before writing and supports email previews and optional SMTP delivery.
+
+- [Setup, architecture, and tests](subgroup1/README.md)
+- [File-level team contributions](subgroup1/README.md#responsibilities-by-file)
+
 ## Subgroup 2 — LangGraph
 
 The LangGraph implementation uses DeepSeek for planning and writing, Tavily for evidence retrieval, and Gradio to show progress and the final report. It supports optional report delivery through NetEase SMTP.
