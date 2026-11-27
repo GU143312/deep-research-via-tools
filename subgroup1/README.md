@@ -8,14 +8,14 @@ It applies the orchestration pattern from Lab 2, **Part 3 → 3a: via Tools**, t
 
 ## Team contributions
 
-The following allocation covers the team's work on this project adaptation.
-Upstream code attribution is documented in [Sources and license](#sources-and-license).
+The team adapted the Deep Research workflow so that a manager agent calls the planning,
+search, writing, and email agents as tools. For upstream credits, see [Sources and license](#sources-and-license).
 
 | Name | Student ID | Contribution | Share |
 | --- | --- | --- | ---: |
-| GU LANTIAN | 1230003640 | Led the development of the project. | 50% |
-| LIU CHANG | 1230003652 | Tested the project and checked its functionality. | 20% |
-| SUN HAOJUN | 1230017538 | Developed a similar product in parallel and contributed to comparing the strengths and weaknesses of both approaches to inform the combined solution. | 30% |
+| GU LANTIAN | 1230003640 | Led development of the Deep Research adaptation. | 50% |
+| LIU CHANG | 1230003652 | Tested the research workflow and checked that its features worked as intended. | 20% |
+| SUN HAOJUN | 1230017538 | Developed an alternative implementation and helped compare both approaches. Updated the Manager to track searches by plan item, require complete coverage before writing, and require a saved report before preparing email. Preserved the original question on Planner retries, enforced the two-search limit for supplementary queries, and reduced the Writer’s response to a save confirmation and summary. | 30% |
 | **Total** | | | **100%** |
 
 ## Assignment and approach
@@ -153,11 +153,11 @@ Keep `.env`, authorization codes and API keys private; `.env` is excluded by `.g
 flowchart LR
     U[Research question] --> M[Research Manager Agent]
     M -->|plan_research| P[Planner Agent]
-    P -->|WebSearchPlan| M
+    P -->|Numbered search plan| M
     M -->|search_web: repeat as needed| S[Search Agent + DeepSeek Search]
     S -->|Evidence and sources| M
     M -->|write_report| W[Writer Agent]
-    W -->|ReportData| M
+    W -->|Saved status and short summary| M
     M -->|email_report| E[Email Agent + send_email_tool]
     E -->|Preview or SMTP receipt| M
     M --> R[Display full report and saved files]
@@ -171,8 +171,9 @@ is also limited to one. This limits simultaneous execution; it does not guarante
 that the model emits only one tool call per response.
 
 Top-level and specialist `max_turns` limits bound execution loops, not cost.
-The extra-search allowance is primarily a prompt constraint; turn limits provide
-the hard stopping boundary. Live model decisions and research quality still need review.
+The search tool tracks completed plan IDs and accepts up to two extra searches per run.
+An early writing request returns the missing IDs to the Manager. Email preparation
+requires a saved report. Planner retries receive the original research question.
 
 Result extractors only serialize or save results; they do not invoke the next stage.
 If Planner or Writer output fails format validation, the tool returns a retry

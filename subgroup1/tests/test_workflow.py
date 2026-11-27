@@ -30,14 +30,18 @@ def script(extra_search=False, finish_email=True):
             "research planner",
             [message(json.dumps({"searches": [{"query": "query A", "reason": "context"}]}))],
         ),
-        ("Research Manager", [tool_call("search_web", input="query A; reason: context")]),
+        ("Research Manager", [tool_call("search_web", plan_id=1, extra=None)]),
         ("research assistant", [message("Evidence A: https://example.com/source")]),
     ]
     if extra_search:
         steps += [
             (
                 "Research Manager",
-                [tool_call("search_web", input="Extra query: conflicting evidence")],
+                [
+                    tool_call(
+                        "search_web", plan_id=None, extra={"query": "conflicts", "reason": "verify"}
+                    )
+                ],
             ),
             ("research assistant", [message("Additional evidence: https://example.com/extra")]),
         ]
@@ -112,10 +116,53 @@ async def test_real_sdk_nested_tools_and_streaming(tmp_path, monkeypatch, extra_
     # Check actual tool results reached the manager's later model input.
     final_manager_input = json.dumps(model.calls[-1][1], default=str)
     assert "Evidence A" in final_manager_input
-    assert "markdown_report" in final_manager_input
+    assert "report_saved" in final_manager_input
+    assert REPORT.short_summary in final_manager_input
+    assert "# Research fixture" not in final_manager_input
     assert "preview_only_not_sent" in final_manager_input
     search_call = next(call for call in model.calls if call[0] == "research assistant")
     assert search_call[2]["tools"][0].name == "deepseek_web_search"
+
+
+async def test_manager_recovers_from_missing_coverage_and_search_limit(tmp_path, monkeypatch):
+    def manager_call(name, **arguments):
+        return ("Research Manager", [tool_call(name, **arguments)])
+
+    steps = script()
+    plan = [{"query": query, "reason": "context"} for query in ("query A", "query B")]
+    steps[1] = ("research planner", [message(json.dumps({"searches": plan}))])
+    attempts = [
+        manager_call("search_web", plan_id=1, extra=None),
+        manager_call("write_report", input="Write early."),
+        manager_call("email_report", input="Prepare early."),
+        manager_call("search_web", plan_id=2, extra=None),
+        ("research assistant", [message("Evidence B")]),
+    ]
+    for index in range(3):
+        attempts.append(
+            manager_call(
+                "search_web", plan_id=None, extra={"query": f"extra {index}", "reason": "verify"}
+            )
+        )
+        if index < 2:
+            attempts.append(("research assistant", [message("Supplementary evidence")]))
+    steps[4:4] = attempts
+    model = use_model(monkeypatch, steps)
+    updates = [
+        u async for u in ResearchManager(Settings(search_count=2, output_root=tmp_path)).run("Q")
+    ]
+    assert not model.steps
+    assert "preview_only_not_sent" in updates[-1].status
+    inputs = json.dumps(model.calls[-1][1], default=str)
+    assert "missing plan IDs: [2]" in inputs
+    assert "Extra search budget exhausted" in inputs
+    evidence = json.loads(next(tmp_path.glob("*/evidence.json")).read_text(encoding="utf-8"))
+    assert [(s["plan_id"], s["query"]) for s in evidence["searches"]] == [
+        (1, "query A"),
+        (2, "query B"),
+        (None, "extra 0"),
+        (None, "extra 1"),
+    ]
 
 
 async def test_incomplete_manager_is_not_reported_as_success(tmp_path, monkeypatch):

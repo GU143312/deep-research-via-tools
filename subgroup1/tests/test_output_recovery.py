@@ -5,7 +5,7 @@ from agents import ModelBehaviorError, RunConfig, Runner
 
 from deep_research.config import Settings
 from deep_research.research_manager import ResearchManager
-from deep_research.state import ResearchState
+from deep_research.state import ResearchState, SearchEvidence
 from deep_research.structured_output import ResearchOutputSchema, StructuredOutputError
 from deep_research.writer_agent import ReportData, build_writer
 
@@ -64,6 +64,10 @@ async def test_manager_recovers_from_one_format_failure(tmp_path, monkeypatch, s
     assert updates[-1].status.count("Manager called: search_web") == 1
     manager_inputs = json.dumps([c[1] for c in model.calls if c[0] == "Research Manager"])
     assert "retry_required" in manager_inputs
+    if stage == "Planner":
+        planner_calls = [call for call in model.calls if call[0] == role]
+        assert len(planner_calls) == 2
+        assert all("Original question" in json.dumps(call[1]) for call in planner_calls)
     saved = json.loads(next(tmp_path.glob("*/evidence.json")).read_text(encoding="utf-8"))
     assert saved["query"] == "Original question"
     assert len(saved["search_summaries"]) == 1
@@ -97,13 +101,15 @@ async def test_second_writer_failure_stops_with_downloadable_evidence(tmp_path, 
 async def test_writer_receives_evidence_saved_after_agent_creation(tmp_path):
     state = ResearchState(tmp_path, query="Original question")
     agent = build_writer(Settings(), state)
-    state.searches.append("Saved evidence: https://example.com/evidence")
+    state.searches.append(
+        SearchEvidence(1, "test query", "context", "Saved evidence: https://example.com/evidence")
+    )
 
     class InspectModel(ScriptedModel):
         async def get_response(self, *args, **kwargs):
             prompt = kwargs["system_instructions"]
             assert "Original question" in prompt
-            assert state.searches[0] in prompt
+            assert state.searches[0].summary in prompt
             return await super().get_response(*args, **kwargs)
 
     await Runner.run(

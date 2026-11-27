@@ -82,7 +82,7 @@ class ResearchManager:
                         yield snapshot()
 
                 # Validate completion; this check does not execute missing stages.
-                if not state.plan or len(state.searches) < len(state.plan.searches):
+                if state.plan is None or state.missing_plan_ids():
                     raise RuntimeError("Manager stopped before completing the planned searches.")
                 if state.report is None or state.email_receipt is None:
                     raise RuntimeError("Manager stopped without a report or email receipt.")

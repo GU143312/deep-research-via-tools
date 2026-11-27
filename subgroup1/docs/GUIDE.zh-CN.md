@@ -8,13 +8,13 @@
 
 ## 团队贡献
 
-以下比例用于分配三位成员对本次项目改造的贡献；上游代码归属见[来源](#来源)。
+团队将 Deep Research 改为由 Manager 调用规划、搜索、写作和邮件四个 Agent 工具。上游代码归属见[来源](#来源)。
 
 | 姓名 | 学号 | 贡献内容 | 占比 |
 | --- | --- | --- | ---: |
-| GU LANTIAN | 1230003640 | 负责项目的主要开发工作。 | 50% |
-| LIU CHANG | 1230003652 | 负责项目测试与功能检查。 | 20% |
-| SUN HAOJUN | 1230017538 | 平行开发了一个相似产品，参与比较两个方案的优缺点，为结合双方优势提供参考。 | 30% |
+| GU LANTIAN | 1230003640 | 主导 Deep Research 项目的改造与开发。 | 50% |
+| LIU CHANG | 1230003652 | 测试研究流程，检查各项功能是否按预期运行。 | 20% |
+| SUN HAOJUN | 1230017538 | 并行开发另一套实现并参与方案比较。改进 Manager 的工具编排，按计划项跟踪搜索，集齐各项结果后才允许写作，报告保存后才允许准备邮件。修复 Planner 重试时丢失原问题的问题，将补充搜索限制为两次，并将 Writer 返回给 Manager 的内容精简为保存状态和摘要。 | 30% |
 | **合计** | | | **100%** |
 
 ## 作业要求核对
@@ -126,11 +126,11 @@ EMAIL_APP_PASSWORD=QQ邮箱生成的授权码
 flowchart LR
     U[研究问题] --> M[Research Manager Agent]
     M -->|plan_research| P[Planner Agent]
-    P -->|WebSearchPlan| M
+    P -->|带编号的搜索计划| M
     M -->|search_web，可重复调用| S[Search Agent + DeepSeek Search]
     S -->|摘要与来源| M
     M -->|write_report| W[Writer Agent]
-    W -->|ReportData| M
+    W -->|保存状态与简短摘要| M
     M -->|email_report| E[Email Agent + send_email_tool]
     E -->|预览或SMTP回执| M
     M --> R[展示完整报告与保存文件]
@@ -141,8 +141,8 @@ Manager 的提示词描述工作依赖，模型负责产生实际工具调用。
 可追加最多两次搜索。DeepSeek 文档说明 `parallel_tool_calls` 参数被忽略，
 因此 SDK 额外设置工具执行并发上限为 1。此限制控制执行并发，并不保证模型一定只输出一个调用。
 顶层 `max_turns` 和每个专业 Agent 的 `max_turns` 限制失控循环，但不保证固定费用。
-额外搜索次数主要由提示词约束；真正的硬停止边界是运行轮数。
-LLM 的实际选择和内容质量仍需要在线验证。
+搜索工具按计划编号记录完成情况，每轮研究最多接受两次补充搜索。
+提前请求写作会收到待完成的编号，保存完整报告后才能准备邮件。Planner 重试时仍会收到原始研究问题。
 
 结果提取器只序列化或保存结果，不会自行调用下一阶段。
 Planner / Writer 格式校验失败时，工具向 Manager 返回重试要求，由 Manager 再次调用
