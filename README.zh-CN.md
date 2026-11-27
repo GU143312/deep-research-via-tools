@@ -6,6 +6,17 @@
 [ed-donner/agents 的 Deep Research](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research)，
 将 Lab 2 的 **Part 3 → 3a: via Tools** 应用到研究流程。
 
+## 团队贡献
+
+以下比例用于分配三位成员对本次项目改造的贡献；上游代码归属见[来源](#来源)。
+
+| 姓名 | 学号 | 贡献内容 | 占比 |
+| --- | --- | --- | ---: |
+| gulantian | 1230003640 | 负责项目的主要开发工作。 | 50% |
+| liuchang | 1230003652 | 负责项目测试与功能检查。 | 20% |
+| sunhaojun | 1230017538 | 平行开发了一个相似产品，参与比较两个方案的优缺点，为结合双方优势提供参考。 | 30% |
+| **合计** | | | **100%** |
+
 ## 作业要求核对
 
 截图指定 `agents/2_openai/deep_research/`，并要求 **Orchestration via Tools**。

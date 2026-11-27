@@ -6,6 +6,18 @@ A standalone adaptation of the OpenAI Agents SDK Lab 4 assignment, based on
 [Deep Research from ed-donner/agents](https://github.com/ed-donner/agents/tree/62569708496917d5e2d5ce1652902d7c80f6b896/2_openai/deep_research).
 It applies the orchestration pattern from Lab 2, **Part 3 → 3a: via Tools**, to the research workflow.
 
+## Team contributions
+
+The following allocation covers the team's work on this project adaptation.
+Upstream code attribution is documented in [Sources and license](#sources-and-license).
+
+| Name | Student ID | Contribution | Share |
+| --- | --- | --- | ---: |
+| gulantian | 1230003640 | Led the development of the project. | 50% |
+| liuchang | 1230003652 | Tested the project and checked its functionality. | 20% |
+| sunhaojun | 1230017538 | Developed a similar product in parallel and contributed to comparing the strengths and weaknesses of both approaches to inform the combined solution. | 30% |
+| **Total** | | | **100%** |
+
 ## Assignment and approach
 
 The assignment points to `agents/2_openai/deep_research/` and asks for
