@@ -8,7 +8,7 @@
 
 ## 团队分工
 
-王健瑀 40%，涂佳恩 31%，李唐子顺 29%。文件级职责见[英文 README 的团队分工](../README.md#team-contributions)。
+王健瑀、涂佳恩和李唐子顺三人贡献相同，各占本组的 1/3。文件级职责见[英文 README 的团队分工](../README.md#team-contributions)。
 
 ## 架构
 

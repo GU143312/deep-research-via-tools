@@ -6,18 +6,18 @@ This research agent uses LangChain and LangGraph to coordinate a tool-based work
 
 ## Team contributions
 
-File paths are relative to `subgroup2/`.
+All three members contributed equally. File paths are relative to `subgroup2/`.
 
 | Member | Share | Files | Contribution |
 | --- | ---: | --- | --- |
-| **Wang Jianyu (王健瑀)** | **40%** | [`deep_research/graph.py`](deep_research/graph.py) | Built the LangGraph state graph, manager node, and tool-call routing. |
+| **Wang Jianyu (王健瑀)** | **1/3 (33⅓%)** | [`deep_research/graph.py`](deep_research/graph.py) | Built the LangGraph state graph, manager node, and tool-call routing. |
 | | | [`deep_research/toolkit.py`](deep_research/toolkit.py) | Implemented the research planning, web search, report writing, and email tools. |
 | | | [`deep_research/service.py`](deep_research/service.py), [`deep_research/__init__.py`](deep_research/__init__.py) | Integrated the model, tools, and workflow, and streamed progress and reports to the UI. |
 | | | [`deep_research/schemas.py`](deep_research/schemas.py) | Defined schemas for search plans, sources, and reports, including normalization for model output. |
-| **Tu Jiaen (涂佳恩)** | **31%** | [`deep_research/clients.py`](deep_research/clients.py) | Integrated Tavily search and NetEase SMTP, including search result normalization and email delivery. |
+| **Tu Jiaen (涂佳恩)** | **1/3 (33⅓%)** | [`deep_research/clients.py`](deep_research/clients.py) | Integrated Tavily search and NetEase SMTP, including search result normalization and email delivery. |
 | | | [`deep_research/config.py`](deep_research/config.py), [`.env.example`](.env.example), [`pyproject.toml`](pyproject.toml) | Managed environment variables, configuration validation, and project dependencies. |
 | | | [`tests/test_clients.py`](tests/test_clients.py), [`tests/test_config.py`](tests/test_config.py) | Tested search result handling, the email client, and configuration behavior. |
-| **Li Tangzishun (李唐子顺)** | **29%** | [`app.py`](app.py), [`styles.py`](styles.py) | Built the Gradio interface for entering questions, displaying progress, and rendering reports. |
+| **Li Tangzishun (李唐子顺)** | **1/3 (33⅓%)** | [`app.py`](app.py), [`styles.py`](styles.py) | Built the Gradio interface for entering questions, displaying progress, and rendering reports. |
 | | | [`tests/test_workflow.py`](tests/test_workflow.py), [`tests/test_schemas.py`](tests/test_schemas.py) | Tested the complete workflow and compatibility with model output. |
 | | | [`README.md`](README.md), [`.gitignore`](.gitignore) | Maintained setup and test instructions and Git ignore rules. |
 | **Total** | **100%** | | |
