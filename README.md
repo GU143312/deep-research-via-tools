@@ -7,6 +7,12 @@ This assignment includes two implementations of a tool-orchestrated deep researc
 | 1 | An OpenAI Agents SDK manager calls specialist agents as tools. | [OpenAI Agents SDK README](subgroup1/README.md) |
 | 2 | A LangGraph manager routes tools through a state graph. `ToolNode` can run Tavily searches concurrently. | [LangGraph README](subgroup2/README.md) |
 
+## Contribution percentages
+
+Each subgroup has a separate contribution table. Its percentages describe shares of that subgroup's work and sum to 100%.
+
+If a single assignment-wide breakdown is required, weight **Subgroup 1 and Subgroup 2 at 50% each**. Each member's assignment-wide share is their subgroup percentage multiplied by 0.5.
+
 ## Subgroup 2 — LangGraph
 
 The LangGraph implementation uses DeepSeek for planning and writing, Tavily for evidence retrieval, and Gradio to show progress and the final report. It supports optional report delivery through NetEase SMTP.
