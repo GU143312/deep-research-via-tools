@@ -1,18 +1,32 @@
-# LangGraph Deep Research（DeepSeek + 网易邮箱）
+# Deep Research with LangGraph
 
-这是一个用 LangChain / LangGraph 编排的深度研究 Agent。DeepSeek 负责规划、工具调用和报告写作，Tavily 负责网页检索，最终报告可选择通过你自己的网易邮箱 SMTP 发送。
+**English** | [简体中文](docs/GUIDE.zh-CN.md)
 
-> 当前邮件能力只是“发送最终报告”，不会读取收件箱，也不会把邮箱授权码交给模型。
+This research agent uses LangChain and LangGraph to coordinate a tool-based workflow. DeepSeek handles planning, tool calls, and report writing. Tavily retrieves web sources, and the finished report can be sent through a NetEase SMTP account.
 
-## 团队分工
+## Team contributions
 
-本部分的工作包括 LangGraph 工作流编排、DeepSeek 和 Tavily 集成、邮件工具、Gradio 界面和测试。成员分工待补充。
+File paths are relative to `subgroup2/`.
 
-## 架构
+| Member | Share | Files | Contribution |
+| --- | ---: | --- | --- |
+| **Wang Jianyu (王健瑀)** | **40%** | [`deep_research/graph.py`](deep_research/graph.py) | Built the LangGraph state graph, manager node, and tool-call routing. |
+| | | [`deep_research/toolkit.py`](deep_research/toolkit.py) | Implemented the research planning, web search, report writing, and email tools. |
+| | | [`deep_research/service.py`](deep_research/service.py), [`deep_research/__init__.py`](deep_research/__init__.py) | Integrated the model, tools, and workflow, and streamed progress and reports to the UI. |
+| | | [`deep_research/schemas.py`](deep_research/schemas.py) | Defined schemas for search plans, sources, and reports, including normalization for model output. |
+| **Tu Jiaen (涂佳恩)** | **31%** | [`deep_research/clients.py`](deep_research/clients.py) | Integrated Tavily search and NetEase SMTP, including search result normalization and email delivery. |
+| | | [`deep_research/config.py`](deep_research/config.py), [`.env.example`](.env.example), [`pyproject.toml`](pyproject.toml) | Managed environment variables, configuration validation, and project dependencies. |
+| | | [`tests/test_clients.py`](tests/test_clients.py), [`tests/test_config.py`](tests/test_config.py) | Tested search result handling, the email client, and configuration behavior. |
+| **Li Tangzishun (李唐子顺)** | **29%** | [`app.py`](app.py), [`styles.py`](styles.py) | Built the Gradio interface for entering questions, displaying progress, and rendering reports. |
+| | | [`tests/test_workflow.py`](tests/test_workflow.py), [`tests/test_schemas.py`](tests/test_schemas.py) | Tested the complete workflow and compatibility with model output. |
+| | | [`README.md`](README.md), [`.gitignore`](.gitignore) | Maintained setup and test instructions and Git ignore rules. |
+| **Total** | **100%** | | |
+
+## Architecture
 
 ```mermaid
 flowchart LR
-    U[研究问题] --> M[LangGraph 管理器]
+    U[Research question] --> M[LangGraph manager]
     M -->|tool call| P[plan_research]
     P --> M
     M -->|parallel tool calls| S1[search_web]
@@ -23,32 +37,30 @@ flowchart LR
     SN --> M
     M -->|tool call| W[write_report]
     W --> M
-    M -. 可选 tool call .-> E[send_report_email]
-    M --> R[带引用的 Markdown 报告]
+    M -. optional tool call .-> E[send_report_email]
+    M --> R[Markdown report with citations]
 ```
 
-关键点：
+- The manager decides which tools to call. The tools carry out planning, research, and writing.
+- The planner returns structured Pydantic output with five complementary searches by default.
+- The manager can issue several `search_web` calls in one turn. LangGraph's `ToolNode` runs them concurrently.
+- The tools retain the search evidence for the current run, keeping long results out of the manager's message history.
+- The writer uses the collected evidence and aims for a 1,200–2,000-word Markdown report with source links.
+- NetEase SMTP delivery is optional. The SMTP credential stays in the email client.
+- Gradio streams tool progress and displays the finished report.
 
-- 管理器只负责决策和工具编排，不直接研究或撰写答案。
-- 规划器使用 Pydantic 结构化输出，默认生成 5 个互补搜索任务。
-- 管理器可在同一轮发出多个 `search_web` 调用；LangGraph 的 `ToolNode` 会并发执行它们。
-- 搜索正文保存在单次运行的工具内存中，不要求管理器在消息中重复大段网页内容。
-- 写作器只使用已收集证据，生成 1,200–2,000 字、包含 Markdown 链接的报告。
-- 网易 SMTP 邮件是可选步骤，未勾选时不会要求邮件配置。
-- Gradio 页面会流式显示每个工具阶段，最终展示完整报告。
+## Quick start
 
-## 快速开始
-
-需要 Python 3.11 或更高版本。请在 subgroup2 项目目录中运行以下命令。
+Use Python 3.11 or later. Run these PowerShell commands from `subgroup2/`.
 
 ```powershell
 py -3.11 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
-Copy-Item .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-编辑 `.env`，先设置 DeepSeek 和 Tavily：
+Set the DeepSeek and Tavily credentials in `.env`.
 
 ```dotenv
 DEEPSEEK_API_KEY=...
@@ -57,14 +69,19 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 TAVILY_API_KEY=...
 ```
 
-`langchain-openai` 在这里只作为 OpenAI 兼容协议的客户端。实际请求会发往 `DEEPSEEK_BASE_URL`，使用的也是 DeepSeek 密钥和模型。
+`langchain-openai` provides the OpenAI-compatible client. The client uses the DeepSeek key and model and sends requests to `DEEPSEEK_BASE_URL`.
 
-### 配置网易邮箱发信
+Start Gradio and open the local URL printed in the terminal, typically `http://127.0.0.1:7860`.
 
-1. 登录网易邮箱网页版。
-2. 进入“设置 → POP3/SMTP/IMAP”，开启 `IMAP/SMTP` 或 `POP3/SMTP` 服务。
-3. 新增并保存“客户端授权码”。不要使用网易邮箱的网页登录密码。
-4. 在 `.env` 里增加：
+```powershell
+python app.py
+```
+
+### Optional NetEase email delivery
+
+1. Sign in to NetEase Webmail.
+2. In **Settings → POP3/SMTP/IMAP**, enable **IMAP/SMTP** or **POP3/SMTP**.
+3. Generate a client authorization code and add the email settings to `.env`. `NETEASE_AUTH_CODE` takes this code.
 
 ```dotenv
 NETEASE_EMAIL=your-name@163.com
@@ -72,58 +89,49 @@ NETEASE_AUTH_CODE=your-client-authorization-code
 EMAIL_TO=recipient@example.com
 ```
 
-`@163.com`、`@126.com` 和 `@yeah.net` 会自动选择相应的 SMTP 主机。如果是网易企业邮箱，请再明确配置管理员提供的主机和 SSL 端口，例如：
+The corresponding SMTP host is selected automatically for `@163.com`, `@126.com`, and `@yeah.net`. For a NetEase enterprise account, set the host and SSL port provided by your administrator.
 
 ```dotenv
 NETEASE_SMTP_HOST=smtp.qiye.163.com
 NETEASE_SMTP_PORT=465
 ```
 
-如果不写 `EMAIL_TO`，程序会默认把报告发给 `NETEASE_EMAIL` 自己。
+`EMAIL_TO` defaults to `NETEASE_EMAIL`. Select the email option in Gradio to send the finished report.
 
-启动：
+## Configuration
 
-```powershell
-python app.py
-```
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DEEPSEEK_API_KEY` | Required | DeepSeek API key |
+| `DEEPSEEK_MODEL` | `deepseek-flash` | Model used for management, planning, and writing |
+| `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | OpenAI-compatible DeepSeek API endpoint |
+| `TAVILY_API_KEY` | Required | Tavily web search API key |
+| `RESEARCH_SEARCH_COUNT` | `5` | Number of search tasks per run, from 1 to 10 |
+| `RESEARCH_MAX_RESULTS` | `5` | Maximum results per search, from 1 to 10 |
+| `NETEASE_EMAIL` | Unset | Full NetEase email address |
+| `NETEASE_AUTH_CODE` | Unset | NetEase client authorization code |
+| `EMAIL_TO` | `NETEASE_EMAIL` | Report recipient |
+| `NETEASE_SMTP_HOST` | Inferred from sender domain | SMTP server |
+| `NETEASE_SMTP_PORT` | `465` | SMTP over SSL port |
 
-打开终端中显示的本地地址（通常是 `http://127.0.0.1:7860`）。
+Alternative models need native tool calling and structured output support.
 
-## 可选配置
-
-| 变量 | 默认值 | 用途 |
-|---|---:|---|
-| `DEEPSEEK_API_KEY` | 无 | DeepSeek API 密钥 |
-| `DEEPSEEK_MODEL` | `deepseek-flash` | 管理器、规划器与写作器所用模型 |
-| `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek 的 OpenAI 兼容 API 地址 |
-| `TAVILY_API_KEY` | 无 | Tavily 网页检索密钥 |
-| `RESEARCH_SEARCH_COUNT` | `5` | 每次研究的搜索任务数，范围 1–10 |
-| `RESEARCH_MAX_RESULTS` | `5` | 每次搜索保留的结果数，范围 1–10 |
-| `NETEASE_EMAIL` | 无 | 完整的网易邮箱地址 |
-| `NETEASE_AUTH_CODE` | 无 | 网易客户端授权码，不是登录密码 |
-| `EMAIL_TO` | `NETEASE_EMAIL` | 固定的报告收件地址 |
-| `NETEASE_SMTP_HOST` | 按邮箱后缀推断 | SMTP 服务器 |
-| `NETEASE_SMTP_PORT` | `465` | SMTP over SSL 端口 |
-
-如果使用的兼容模型不支持原生工具调用和结构化输出，需要改用支持这些能力的模型。
-
-## 测试
+## Tests
 
 ```powershell
-pytest
+python -m pytest
 ruff check .
 ```
 
-测试不会调用真实模型、搜索或邮件 API。
+The tests run offline with substitutes for model, search, and email calls.
 
-## 与参考实现的对应关系
+## Mapping to the reference implementation
 
-| 参考项目 | 本项目 |
-|---|---|
-| `ResearchManager` 顺序调用各 Agent | LangGraph 管理器以工具调用循环动态编排 |
-| `planner_agent` | `plan_research` 工具 + 结构化输出 |
-| `search_agent` + OpenAI WebSearchTool | `search_web` 工具 + Tavily |
-| `writer_agent` | `write_report` 工具 + `ReportData` |
-| `email_agent` + SendGrid tool | 可选 `send_report_email` 工具 + 网易 SMTP |
-| Gradio 状态更新 | LangGraph 事件流驱动的 Gradio 状态更新 |
-
+| Reference implementation | LangGraph implementation |
+| --- | --- |
+| `ResearchManager` calls agents in sequence | The LangGraph manager routes tool calls in a loop |
+| `planner_agent` | The `plan_research` tool returns structured output |
+| `search_agent` and OpenAI `WebSearchTool` | The `search_web` tool uses Tavily |
+| `writer_agent` | The `write_report` tool returns `ReportData` |
+| `email_agent` and SendGrid | The optional `send_report_email` tool uses NetEase SMTP |
+| Gradio status updates | LangGraph events drive Gradio status updates |
