@@ -41,7 +41,7 @@ flowchart LR
 
 ## 快速开始
 
-需要 Python 3.11 或更高版本。请在 subgroup2 项目目录中运行以下命令。
+需要 Python 3.11 或更高版本。请在 subgroup2-langgraph 项目目录中运行以下命令。
 
 ```powershell
 py -3.11 -m venv .venv

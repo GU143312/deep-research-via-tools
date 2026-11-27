@@ -6,7 +6,7 @@ This research agent uses LangChain and LangGraph to coordinate a tool-based work
 
 ## Team contributions
 
-All three members contributed equally. File paths are relative to `subgroup2/`.
+All three members contributed equally. File paths are relative to `subgroup2-langgraph/`.
 
 | Member | Share | Files | Contribution |
 | --- | ---: | --- | --- |
@@ -51,7 +51,7 @@ flowchart LR
 
 ## Quick start
 
-Use Python 3.11 or later. Run these PowerShell commands from `subgroup2/`.
+Use Python 3.11 or later. Run these PowerShell commands from `subgroup2-langgraph/`.
 
 ```powershell
 py -3.11 -m venv .venv
